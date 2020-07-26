@@ -18,9 +18,6 @@ export default class Menu extends React.Component {
     }
     return result;
   }
-  componentDidMount() {
-    console.log('test render menu');
-  }
   render() {
     return (
       <div>

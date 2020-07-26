@@ -3,7 +3,7 @@ import { Button } from 'react-bootstrap';
 import * as sg from './sudokuGenerator.js';
 var _ = require('lodash');
 
-export default class Board extends React.Component {
+export default class Board extends React.PureComponent {
   constructor(props) {
     super(props);
     let startingBoard = sg.generateStartingBoard(this.props.initial);
@@ -12,12 +12,23 @@ export default class Board extends React.Component {
       status: {
         msg: '',
         color: 'blue',
+        openModal: true,
       },
     };
   }
 
-  componentDidMount() {
-    console.log('test render');
+  componentDidUpdate(prevProps) {
+    if (prevProps.change !== this.props.change) {
+      let renewBoard = sg.generateStartingBoard(this.props.initial);
+      this.setState({
+        squares: renewBoard,
+        status: {
+          msg: '',
+          color: 'blue',
+          openModal: true,
+        },
+      });
+    }
   }
 
   handleKeyPress = (e) => {
@@ -32,7 +43,7 @@ export default class Board extends React.Component {
     this.setState({ squares: squares });
   }
 
-  handleValidation(squares) {
+  async handleValidation(squares) {
     const cells = sg.elementsToPositions(squares.slice());
     let emptyCells = cells.map((cell) => cell.value === '').filter((v) => v).length;
     let msg = 'No conflicts, ' + emptyCells + ' cells to go!';
@@ -70,6 +81,7 @@ export default class Board extends React.Component {
       .includes(true);
     let hasEmpty = cells.map((cell) => cell.value).includes('');
     if (!hasEmpty && !hasConflict) {
+      this.props.submitScore();
       this.setState({
         status: {
           msg: 'Puzzle Solved!!',
@@ -109,9 +121,10 @@ export default class Board extends React.Component {
         onClick={() => {
           this.handleValidation(this.state.squares);
         }}
+        disabled={!this.props.start}
         key={'v-' + _.random(0, 1000)}
       >
-        Validate
+        Submit
       </Button>
     );
     board.push(
@@ -148,6 +161,10 @@ export default class Board extends React.Component {
       />
     );
   }
+
+  handleClose = () => {
+    this.setState({ openModal: false });
+  };
 
   render() {
     return (
